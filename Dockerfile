@@ -31,7 +31,7 @@ RUN apk add --no-cache \
 	&& rm -rf /var/cache/apk/*
 
 # Copy entrypoint script to container
-COPY entry.sh /entry.sh
+COPY docker-entrypoint.sh /docker-entrypoint.sh
 
 # Setup environment variables; export SSH_AUTH_SOCK from socket directory
 ENV SOCKET_DIR /.ssh-agent
@@ -40,6 +40,6 @@ ENV SSH_AUTH_PROXY_SOCK ${SOCKET_DIR}/proxy-socket
 
 VOLUME ${SOCKET_DIR}
 
-ENTRYPOINT ["/entry.sh"]
+ENTRYPOINT ["/docker-entrypoint.sh"]
 
 CMD ["ssh-agent"]

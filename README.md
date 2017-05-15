@@ -8,36 +8,19 @@ On OSX you cannot simply forward your authentication socket to a docker containe
 
 ## How to use
 
-### Quickstart
-
-To get up and running super fast, run the `run.sh` script which will build the images for you, launch the ssh-agent and add your keys. If your keys are password protected (hopefully) you will just need to input your passphrase.
-
-Launch everything:
-
-```
-./run.sh
-```
-
-Remove your keys from ssh-agent and stop container:
-
-```
-./run.sh -s
-```
-### Step by step
-
-#### 0. Build
+### 0. Build
 Navigate to the project directory and launch the following command to build the image:
 
 ```
 docker build -t docker-ssh-agent:latest -f Dockerfile .
 ```
 
-#### 1. Run a long-lived container
+### 1. Run a long-lived container
 ```
 docker run -d --name=ssh-agent docker-ssh-agent:latest
 ```
 
-#### 2. Add your ssh keys
+### 2. Add your ssh keys
 
 Run a temporary container with volume mounted from host that includes your SSH keys. SSH key id_rsa will be added to ssh-agent (you can replace id_rsa with your key name):
 
@@ -47,7 +30,7 @@ docker run --rm --volumes-from=ssh-agent -v ~/.ssh:/root/.ssh -it docker-ssh-age
 
 The ssh-agent container is now ready to use.
 
-#### 3. Add ssh-agent socket to other container:
+### 3. Add ssh-agent socket to other container:
 
 If you're using `docker-compose` this is how you forward the socket to a container:
 
@@ -58,7 +41,7 @@ If you're using `docker-compose` this is how you forward the socket to a contain
     - SSH_AUTH_SOCK=/.ssh-agent/socket
 ```
 
-##### For non-root users
+#### For non-root users
 The above only works for root. ssh-agent socket is accessible only to the user which started this agent or for root user. So other users don't have access to `/.ssh-agent/socket`. If you have another user in your container you should do the following:
 
 1. Install `socat` utility in your container
@@ -75,7 +58,7 @@ sudo chown $(id -u) ~/.ssh/socket
 SSH_AUTH_SOCK=~/.ssh/socket
 ```
 
-##### Without docker-compose
+#### Without docker-compose
 Here's an example how to run a Ubuntu container that uses the ssh authentication socket:
 ```
 docker run -it --volumes-from=ssh-agent -e SSH_AUTH_SOCK=/.ssh-agent/socket ubuntu:latest /bin/bash
