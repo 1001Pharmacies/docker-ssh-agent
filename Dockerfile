@@ -1,25 +1,23 @@
 # Docker Image for SSH agent container
 #
-FROM alpine:3.4
+FROM alpine:latest
 
-MAINTAINER Andreas Urbanski <urbanski.andreas@gmail.com>
+LABEL maintainer "Yann Autissier <yann.autissier@gmail.com>"
 
 # Install dependencies
 RUN apk add --no-cache \
-	bash \
-	openssh \
-	socat \
-	&& rm -rf /var/cache/apk/*
-
-# Copy entrypoint script to container
-COPY docker-entrypoint.sh /docker-entrypoint.sh
+        openssh \
+        socat
 
 # Setup environment variables; export SSH_AUTH_SOCK from socket directory
-ENV SOCKET_DIR /.ssh-agent
+ENV SOCKET_DIR /tmp/ssh-agent
 ENV SSH_AUTH_SOCK ${SOCKET_DIR}/socket
 ENV SSH_AUTH_PROXY_SOCK ${SOCKET_DIR}/proxy-socket
 
 VOLUME ${SOCKET_DIR}
+
+# Copy entrypoint script to container
+COPY docker-entrypoint.sh /docker-entrypoint.sh
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 

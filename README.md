@@ -16,6 +16,7 @@ docker build -t docker-ssh-agent:latest -f Dockerfile .
 ```
 
 ### 1. Run a long-lived container
+
 ```
 docker run -d --name=ssh-agent docker-ssh-agent:latest
 ```
@@ -32,36 +33,34 @@ The ssh-agent container is now ready to use.
 
 ### 3. Add ssh-agent socket to other container:
 
+#### With docker-compose
+
 If you're using `docker-compose` this is how you forward the socket to a container:
 
 ```
   volumes_from:
     - ssh-agent
   environment:
-    - SSH_AUTH_SOCK=/.ssh-agent/socket
-```
-
-#### For non-root users
-The above only works for root. ssh-agent socket is accessible only to the user which started this agent or for root user. So other users don't have access to `/.ssh-agent/socket`. If you have another user in your container you should do the following:
-
-1. Install `socat` utility in your container
-2. Make proxy-socket in your container:
-```
-sudo socat UNIX-LISTEN:~/.ssh/socket,fork UNIX-CONNECT:/.ssh-agent/socket &
-```
-3. Change the owner of this proxy-socket
-```
-sudo chown $(id -u) ~/.ssh/socket
-```
-4. You will need to use different SSH_AUTH_SOCK for this user:
-```
-SSH_AUTH_SOCK=~/.ssh/socket
+    - SSH_AUTH_SOCK=/tmp/ssh-agent/socket
 ```
 
 #### Without docker-compose
+
 Here's an example how to run a Ubuntu container that uses the ssh authentication socket:
+
 ```
-docker run -it --volumes-from=ssh-agent -e SSH_AUTH_SOCK=/.ssh-agent/socket ubuntu:latest /bin/bash
+docker run -it --volumes-from=ssh-agent -e SSH_AUTH_SOCK=/tmp/ssh-agent/socket ubuntu:latest /bin/bash
+```
+
+#### Disable host key verification in your containers
+
+You may wish to disable the ssh host key verification inside your containers to avoid using interactive mode at all.
+You can do it adding the following configuration in the /etc/ssh/ssh_config file of your containers.
+
+```
+Host *
+  UserKnownHostsFile /dev/null
+  StrictHostKeyChecking no
 ```
 
 ### Deleting keys from the container
